@@ -2,11 +2,11 @@ import os
 import sys 
 import pandas as pd    
 import numpy as np      
-
+import pickle 
 from src.HousePricePrediction.logger import logging
-from src.HousePricePrediction.exceotion import custom_exception
+from src.HousePricePrediction.exception import custom_exception
 
-from sklearn.metrics import r2_score,mean_absolute_error,mean_sqaured_error
+from sklearn.metrics import r2_score,mean_absolute_error,mean_squared_error
 
 def save_object(file_path,obj):
     try:
@@ -14,8 +14,8 @@ def save_object(file_path,obj):
         
         os.makedirs(dir_path,exist_ok=True)
         
-        with open(file_path,'wb') as fileobj:
-            pickle.dump(obj, file_path)        
+        with open(file_path, 'wb') as file:
+            pickle.dump(obj, file)        
     
     except Exception as e :
         raise custom_exception(e,sys)
@@ -23,21 +23,20 @@ def save_object(file_path,obj):
 
 def evaluate_model(X_train,y_train,X_test,y_test,models):
     try:
-        report=[]
-        for i in range(len(models)):
-            model = list(models.values())[i]
-            #model train
-            model.fit(X_train,y_train)
+        report={}
+        for model_name, model in models.items():  
+            # Model train
+            model.fit(X_train, y_train)
             
-            #prediction
-            y_pred=model.predict(X_test)
+            # Prediction
+            y_pred = model.predict(X_test)
             
-            #test_model_score
-            test_model_score=r2_score(y_test,y_pred)
+            # Test model score
+            test_model_score = r2_score(y_test, y_pred)
             
-            report[list(models.keys())[i]] = test_model_score
+            report[model_name] = test_model_score 
             
-        return reprot   
+        return report   
     
     except Exception as e:
         logging.info("exception occured in the evaluate models")

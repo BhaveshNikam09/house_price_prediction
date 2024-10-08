@@ -10,6 +10,7 @@ from src.HousePricePrediction.utils.utils import save_object
 from src.HousePricePrediction.utils.utils import evaluate_model
 
 from sklearn.linear_model import LinearRegression,Ridge,Lasso,ElasticNet
+from sklearn.ensemble import RandomForestRegressor
 
 @dataclass
 class ModelTrainigCongif :
@@ -23,31 +24,31 @@ class ModelTrainer:
         try:
             logging.info('spliting the data by train and test')
             X_train, y_train, X_test, y_test =(
-                Train_array[:,:-1],
-                Train_array[:,-1],
-                Test_array[:,:-1],
-                Test_array[:,-1]
+                Train_Array[:,:-1],
+                Train_Array[:,-1],
+                Test_Array[:,:-1],
+                Test_Array[:,-1]
             )
             
             models={
                 'linear regression':LinearRegression(),
                 'ridge':Ridge(),
                 'lasso':Lasso(),
-                'elasticnet':ElasticNet()
+                'elasticnet':ElasticNet(),
+                'Random Forest':RandomForestRegressor()
             }
             
-            models_report:dict=evaluate_model(X_train,y_train,X_test,y_test,model)
+            models_report:dict=evaluate_model(X_train,y_train,X_test,y_test,models)
             print(models_report)
             print("\n======================================================================================\n")
             logging.info(f'report : {models_report}')
             
-            best_model_score=max(models_report.values())
-            
+            best_model_score=max(models_report.values())           
             best_model_name=list(models_report.keys())[
                 list(models_report.values()).index(best_model_score)
             ]
             
-            best_model=model[best_model_name]
+            best_model=models[best_model_name]
             print(f'Best Model Found :{best_model_name} , r2_score : {best_model_score}')
             
             logging.info(f'best model found :{best_model_name} , r2_score;{best_model_score}')

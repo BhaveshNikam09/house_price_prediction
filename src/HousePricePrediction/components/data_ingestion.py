@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np      
 from sklearn.model_selection import train_test_split   
 from dataclasses import dataclass
-from pathlib import path
+from pathlib import Path
 
 class DataIngestionConfig :
     raw_data_path:str=os.path.join('artifacts','raw.csv')
@@ -34,7 +34,7 @@ class dataingestion:
             
             logging.info('spliting the data in train and test')
             
-            train_data,test_data=train_test_split(data,test_size=0.10,random_state=2)
+            train_data,test_data=train_test_split(data,test_size=0.11,random_state=25)
             #splitinng done 
             
             logging.info('saving the data ')

@@ -12,7 +12,7 @@ from sklearn.impute import  SimpleImputer
 from sklearn.pipeline import Pipeline 
 from sklearn.preprocessing import OrdinalEncoder,StandardScaler
 
-from src.HousePricePredction.utils.utils import save_object
+from src.HousePricePrediction.utils.utils import save_object
 
 @dataclass
 class DataTranformationConfig:
@@ -28,8 +28,9 @@ class DataTranformation:
             logging.info('intiated data tranformation')
             
             #defing the num and cat column
-            num_column=X.columns[X.dtypes!='O']
-            cat_column=X.columns[X.dtypes=='O']
+            num_column=['area', 'bedrooms', 'bathrooms', 'stories', 'parking']
+            cat_column=['mainroad', 'guestroom', 'basement', 'hotwaterheating',
+                        'airconditioning', 'prefarea', 'furnishingstatus']
             
             #defing custom cate
             mainroad=['no','yes']
@@ -62,23 +63,23 @@ class DataTranformation:
                 )
             
             
-            preprocessor=ColumnTransformer(
-                ('num',num_pipeline,num_column),
-                ('cat',cat_pipeline,cat_column)
-                
-            )
-            
+            preprocessor = ColumnTransformer(
+                     transformers=[
+                        ('num', num_pipeline, num_column),
+                        ('cat', cat_pipeline, cat_column)
+                         ]
+                    )
+
             return preprocessor
         
         except Exception as e:
-            logging.info('excetion occured in intiated state')
             raise custom_exception(e,sys)
         
 
     def initialize_data_tranform(self,train_path,test_path):
         try:
             train_data=pd.read_csv(train_path)
-            test_path=pd.read_csv(test_path)
+            test_data=pd.read_csv(test_path)
             
             logging.info('test and train data access')
             
@@ -92,25 +93,24 @@ class DataTranformation:
             input_featue_test_data=test_data.drop(columns=target_column,axis=1)
             target_feature_test_data=test_data[target_column]
             
-            input_train_data_arr=preprocessing_obj.fit_transform(input_feature_train_data)
-            input_test_data_arr=preprocessing_obj.transform(input_featue_test_data)
+            input_train_data_arr=preprocessor_obj.fit_transform(input_feature_train_data)
+            input_test_data_arr=preprocessor_obj.transform(input_featue_test_data)
             logging.info("Applying preprocessing object on training and testing datasets.")
             
-            train_arr=np.c_(input_train_data_arr,np.array(target_feature_train_data))
-            test_arr=np.c_(input_test_data_arr,np.array(target_feature_test_data))
+            train_arr = np.concatenate([input_train_data_arr, np.array(target_feature_train_data).reshape(-1, 1)], axis=1)
+            test_arr = np.concatenate([input_test_data_arr, np.array(target_feature_test_data).reshape(-1, 1)], axis=1)
             
             save_object(
-                file_path=self.data_transformation_config.preprocessor_obj_file_path,
-                obj=preprocessing_obj
+                file_path=self.data_trans_config.processor_obj_file,
+                obj=preprocessor_obj
             )
             logging.info("preprocessing pickle file saved")
             
             return(
                 train_arr,
-                test,arr
+                test_arr
             )
         
         except Exception as e:
-            logging.info("Exception occured in the initiate_datatransformation")
             raise custom_exception(e,sys)
     
